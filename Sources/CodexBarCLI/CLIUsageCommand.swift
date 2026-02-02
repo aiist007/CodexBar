@@ -161,6 +161,12 @@ extension CodexBarCLI {
             }
         }
 
+        // For JSON output, we've already emitted the per-provider payload. Avoid emitting an additional
+        // generic CLI error payload which would produce invalid/ambiguous multi-JSON output.
+        if format == .json {
+            Self.platformExit(exitCode.rawValue)
+        }
+
         Self.exit(code: exitCode, output: output, kind: exitCode == .success ? .runtime : .provider)
     }
 

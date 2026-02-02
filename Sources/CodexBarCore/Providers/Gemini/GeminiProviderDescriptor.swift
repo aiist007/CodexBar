@@ -47,9 +47,10 @@ struct GeminiStatusFetchStrategy: ProviderFetchStrategy {
 
     func isAvailable(_: ProviderFetchContext) async -> Bool { true }
 
-    func fetch(_: ProviderFetchContext) async throws -> ProviderFetchResult {
+    func fetch(_ context: ProviderFetchContext) async throws -> ProviderFetchResult {
         let probe = GeminiStatusProbe()
-        let snap = try await probe.fetch()
+        let refreshToken = context.env["ANTIGRAVITY_REFRESH_TOKEN"]
+        let snap = try await probe.fetch(refreshTokenOverride: refreshToken)
         return self.makeResult(
             usage: snap.toUsageSnapshot(),
             sourceLabel: "api")

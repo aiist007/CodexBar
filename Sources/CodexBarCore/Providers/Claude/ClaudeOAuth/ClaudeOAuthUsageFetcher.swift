@@ -36,7 +36,11 @@ enum ClaudeOAuthUsageFetcher {
     private static let betaHeader = "oauth-2025-04-20"
 
     static func fetchUsage(accessToken: String) async throws -> OAuthUsageResponse {
-        guard let url = URL(string: baseURL + usagePath) else {
+        let base = self.resolveBaseURL()
+        var normalized = base.trimmingCharacters(in: .whitespacesAndNewlines)
+        while normalized.hasSuffix("/") { normalized.removeLast() }
+        
+        guard let url = URL(string: normalized + usagePath) else {
             throw ClaudeOAuthFetchError.invalidResponse
         }
 
@@ -86,6 +90,44 @@ enum ClaudeOAuthUsageFetcher {
         if let date = formatter.date(from: string) { return date }
         formatter.formatOptions = [.withInternetDateTime]
         return formatter.date(from: string)
+    }
+
+    private static func resolveBaseURL() -> String {
+        let env = ProcessInfo.processInfo.environment
+        if let contents = self.loadConfigContents(env: env),
+           let parsed = self.parseClaudeBaseURL(from: contents) {
+            return parsed
+        }
+        return Self.baseURL
+    }
+
+    private static func loadConfigContents(env: [String: String]) -> String? {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let codexHome = env["CODEX_HOME"]?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let root = (codexHome?.isEmpty == false) ? URL(fileURLWithPath: codexHome!) : home
+            .appendingPathComponent(".codex")
+        let url = root.appendingPathComponent("config.toml")
+        return try? String(contentsOf: url, encoding: .utf8)
+    }
+
+    private static func parseClaudeBaseURL(from contents: String) -> String? {
+        for rawLine in contents.split(whereSeparator: \.isNewline) {
+            let line = rawLine.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: true).first
+            let trimmed = line?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard !trimmed.isEmpty else { continue }
+            let parts = trimmed.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: true)
+            guard parts.count == 2 else { continue }
+            let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
+            guard key == "claude_base_url" else { continue }
+            var value = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
+            if value.hasPrefix("\""), value.hasSuffix("\"") {
+                value = String(value.dropFirst().dropLast())
+            } else if value.hasPrefix("'"), value.hasSuffix("'") {
+                value = String(value.dropFirst().dropLast())
+            }
+            return value.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return nil
     }
 }
 

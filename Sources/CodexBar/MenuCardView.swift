@@ -640,7 +640,15 @@ extension UsageMenuCardView.Model {
             isRefreshing: input.isRefreshing,
             lastError: input.lastError)
         let redacted = Self.redactedText(input: input, subtitle: subtitle)
-        let placeholder = input.snapshot == nil && !input.isRefreshing && input.lastError == nil ? "No usage yet" : nil
+        let placeholder: String? = if input.lastError != nil {
+            nil
+        } else if input.snapshot == nil {
+            input.isRefreshing ? nil : "No usage yet"
+        } else if metrics.isEmpty {
+            Self.emptyMetricsPlaceholder(provider: input.provider, snapshot: input.snapshot)
+        } else {
+            nil
+        }
 
         return UsageMenuCardView.Model(
             providerName: input.metadata.displayName,
@@ -657,6 +665,13 @@ extension UsageMenuCardView.Model {
             tokenUsage: tokenUsage,
             placeholder: placeholder,
             progressColor: Self.progressColor(for: input.provider))
+    }
+
+    private static func emptyMetricsPlaceholder(provider: UsageProvider, snapshot: UsageSnapshot?) -> String? {
+        guard provider == .opencode || provider == .nvidia else { return nil }
+        let method = snapshot?.identity?.scoped(to: provider).loginMethod?.lowercased() ?? ""
+        guard method.contains("api") else { return nil }
+        return "Connected (API key) — quota unavailable"
     }
 
     private static func email(

@@ -95,13 +95,6 @@ let package = Package(
                     .define("ENABLE_SPARKLE"),
                 ]),
             .executableTarget(
-                name: "CodexBarWidget",
-                dependencies: ["CodexBarCore"],
-                path: "Sources/CodexBarWidget",
-                swiftSettings: [
-                    .enableUpcomingFeature("StrictConcurrency"),
-                ]),
-            .executableTarget(
                 name: "CodexBarClaudeWebProbe",
                 dependencies: ["CodexBarCore"],
                 path: "Sources/CodexBarClaudeWebProbe",

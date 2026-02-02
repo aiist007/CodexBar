@@ -45,12 +45,30 @@ struct TokenAccountCLIContext {
 
     func resolvedAccounts(for provider: UsageProvider) throws -> [ProviderTokenAccount] {
         guard TokenAccountSupportCatalog.support(for: provider) != nil else { return [] }
-        guard let data = self.accountsByProvider[provider], !data.accounts.isEmpty else {
+        let data = self.accountsByProvider[provider]
+        if data?.accounts.isEmpty != false {
+            if provider == .antigravity || provider == .gemini {
+                let fetched = OpenCodeAuthStore().loadAntigravityAccounts()
+                if !fetched.isEmpty {
+                    let now = Date().timeIntervalSince1970
+                    return fetched.map { account in
+                        ProviderTokenAccount(
+                            id: UUID(),
+                            label: account.email,
+                            token: account.refreshToken,
+                            addedAt: now,
+                            lastUsed: nil)
+                    }
+                }
+            }
+
             if self.selection.usesOverride {
                 throw TokenAccountCLIError.noAccounts(provider)
             }
             return []
         }
+
+        guard let data else { return [] }
 
         if self.selection.allAccounts {
             return data.accounts
@@ -147,7 +165,7 @@ struct TokenAccountCLIContext {
             return self.makeSnapshot(
                 jetbrains: ProviderSettingsSnapshot.JetBrainsProviderSettings(
                     ideBasePath: nil))
-        case .gemini, .antigravity, .copilot, .kiro, .vertexai, .kimik2, .synthetic:
+        case .gemini, .antigravity, .copilot, .kiro, .vertexai, .kimik2, .synthetic, .nvidia:
             return nil
         }
     }

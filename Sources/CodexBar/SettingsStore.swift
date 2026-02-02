@@ -141,6 +141,7 @@ final class SettingsStore {
         userDefaults.removeObject(forKey: "showCodexUsage")
         userDefaults.removeObject(forKey: "showClaudeUsage")
         LaunchAtLoginManager.setEnabled(self.launchAtLogin)
+        self.applyOpenCodeAuthKeyAutoEnableIfNeeded()
         self.runInitialProviderDetectionIfNeeded()
         self.applyTokenCostDefaultIfNeeded()
         if self.claudeUsageDataSource != .cli { self.claudeWebExtrasEnabled = false }
@@ -258,7 +259,8 @@ extension SettingsStore {
         enablement.reserveCapacity(metadata.count)
         for provider in UsageProvider.allCases {
             let defaultEnabled = metadata[provider]?.defaultEnabled ?? false
-            enablement[provider] = config.providerConfig(for: provider)?.enabled ?? defaultEnabled
+            let configEntry = config.providerConfig(for: provider)
+            enablement[provider] = configEntry?.enabled ?? defaultEnabled
         }
         self.providerEnablement = enablement
     }

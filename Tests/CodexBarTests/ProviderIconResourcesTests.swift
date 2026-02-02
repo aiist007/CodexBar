@@ -17,6 +17,7 @@ struct ProviderIconResourcesTests {
             "minimax",
             "cursor",
             "opencode",
+            "nvidia",
             "gemini",
             "antigravity",
             "factory",

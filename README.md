@@ -63,7 +63,6 @@ The menu bar icon is a tiny two-bar meter:
 - Merge Icons mode to combine providers into one status item + switcher.
 - Refresh cadence presets (manual, 1m, 2m, 5m, 15m).
 - Bundled CLI (`codexbar`) for scripts and CI (including `codexbar cost --provider codex|claude` for local cost usage); Linux CLI builds available.
-- WidgetKit widget mirrors the menu card snapshot.
 - Privacy-first: on-device parsing by default; browser cookies are opt-in and reused (no passwords stored).
 
 ## Privacy note

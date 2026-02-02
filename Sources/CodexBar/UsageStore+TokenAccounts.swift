@@ -20,11 +20,58 @@ struct TokenAccountUsageSnapshot: Identifiable, Sendable {
 extension UsageStore {
     func tokenAccounts(for provider: UsageProvider) -> [ProviderTokenAccount] {
         guard TokenAccountSupportCatalog.support(for: provider) != nil else { return [] }
-        return self.settings.tokenAccounts(for: provider)
+        let stored = self.settings.tokenAccounts(for: provider)
+        if !stored.isEmpty { return stored }
+
+        if provider == .antigravity || provider == .gemini {
+            return self.virtualOpenCodeAntigravityAccounts()
+        }
+
+        return stored
+    }
+
+    private func virtualOpenCodeAntigravityAccounts() -> [ProviderTokenAccount] {
+        let fetched = OpenCodeAuthStore().loadAntigravityAccounts()
+        guard !fetched.isEmpty else { return [] }
+
+        var out: [ProviderTokenAccount] = []
+        out.reserveCapacity(fetched.count)
+        let now = Date().timeIntervalSince1970
+        for account in fetched {
+            let label = account.email
+            let token = account.refreshToken
+            let id = Self.stableAccountID(seed: label)
+            out.append(ProviderTokenAccount(id: id, label: label, token: token, addedAt: now, lastUsed: nil))
+        }
+        return out
+    }
+
+    private static func stableAccountID(seed: String) -> UUID {
+        // Deterministic UUID derived from a stable string (FNV-1a 128-ish via two 64-bit hashes).
+        let bytes = Array(seed.utf8)
+
+        func fnv64(_ seed: UInt64) -> UInt64 {
+            var hash = seed
+            for b in bytes {
+                hash ^= UInt64(b)
+                hash &*= 1099511628211
+            }
+            return hash
+        }
+
+        let hi = fnv64(14695981039346656037)
+        let lo = fnv64(1099511628211)
+
+        let hex = String(format: "%016llx%016llx", hi, lo)
+        let uuidString = "\(hex.prefix(8))-\(hex.dropFirst(8).prefix(4))-\(hex.dropFirst(12).prefix(4))-\(hex.dropFirst(16).prefix(4))-\(hex.dropFirst(20))"
+        return UUID(uuidString: uuidString) ?? UUID()
     }
 
     func shouldFetchAllTokenAccounts(provider: UsageProvider, accounts: [ProviderTokenAccount]) -> Bool {
         guard TokenAccountSupportCatalog.support(for: provider) != nil else { return false }
+        if provider == .antigravity || provider == .gemini {
+            return accounts.count > 1
+        }
         return self.settings.showAllTokenAccountsInMenu && accounts.count > 1
     }
 

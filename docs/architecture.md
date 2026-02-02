@@ -10,7 +10,6 @@ read_when:
 ## Modules
 - `Sources/CodexBarCore`: fetch + parse (Codex RPC, PTY runner, Claude probes, OpenAI web scraping, status polling).
 - `Sources/CodexBar`: state + UI (UsageStore, SettingsStore, StatusItemController, menus, icon rendering).
-- `Sources/CodexBarWidget`: WidgetKit extension wired to the shared snapshot.
 - `Sources/CodexBarCLI`: bundled CLI for `codexbar` usage/status output.
 - `Sources/CodexBarMacros`: SwiftSyntax macros for provider registration.
 - `Sources/CodexBarMacroSupport`: shared macro support used by app/core/CLI targets.

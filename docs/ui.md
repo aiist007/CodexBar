@@ -25,9 +25,4 @@ read_when:
 - Token accounts: optional account switcher bar or stacked account cards (up to 6) when multiple manual tokens exist.
 
 ## Preferences notes
-- Advanced: “Disable Keychain access” turns off browser cookie import; paste Cookie headers manually in Providers.
-
-## Widgets (high level)
-- Widget entries mirror the menu card; detailed pipeline in `docs/widgets.md`.
-
-See also: `docs/widgets.md`.
+- Advanced: "Disable Keychain access" turns off browser cookie import; paste Cookie headers manually in Providers.

@@ -145,7 +145,15 @@ public struct GeminiStatusProbe: Sendable {
         return GeminiAuthType(rawValue: selectedType) ?? .unknown
     }
 
-    public func fetch() async throws -> GeminiStatusSnapshot {
+    public func fetch(refreshTokenOverride: String? = nil) async throws -> GeminiStatusSnapshot {
+        if let snapshot = try? await Self.fetchViaOpenCodeAntigravity(
+            refreshTokenOverride: refreshTokenOverride,
+            timeout: self.timeout,
+            dataLoader: self.dataLoader)
+        {
+            return snapshot
+        }
+
         // Block explicitly unsupported auth types; allow unknown to try OAuth creds
         let authType = Self.currentAuthType(homeDirectory: self.homeDirectory)
         switch authType {
@@ -166,6 +174,68 @@ public struct GeminiStatusProbe: Sendable {
             "dailyPercentLeft": "\(snap.dailyPercentLeft ?? -1)",
         ])
         return snap
+    }
+
+    private static func fetchViaOpenCodeAntigravity(
+        refreshTokenOverride: String?,
+        timeout: TimeInterval,
+        dataLoader: @escaping @Sendable (URLRequest) async throws -> (Data, URLResponse)) async throws
+        -> GeminiStatusSnapshot
+    {
+        let store = OpenCodeAuthStore()
+        let account: OpenCodeAuthStore.AntigravityAccount? = {
+            if let raw = refreshTokenOverride?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty {
+                let accounts = store.loadAntigravityAccounts()
+                if let match = accounts.first(where: { $0.refreshToken == raw }) {
+                    return match
+                }
+                return OpenCodeAuthStore.AntigravityAccount(
+                    email: "Imported",
+                    refreshToken: raw,
+                    projectId: nil,
+                    managedProjectId: nil)
+            }
+            return store.loadActiveAntigravityAccount()
+        }()
+
+        guard let account else {
+            throw GeminiStatusProbeError.notLoggedIn
+        }
+
+        let probe = AntigravityOAuthQuotaProbe(timeout: timeout, dataLoader: dataLoader)
+        let snap = try await probe.fetch(account: account)
+
+        var quotas: [GeminiModelQuota] = []
+        for model in snap.modelQuotas {
+            if model.label == "Gemini Pro" {
+                if let remaining = model.remainingFraction {
+                    quotas.append(GeminiModelQuota(
+                        modelId: "gemini-3-pro",
+                        percentLeft: remaining * 100,
+                        resetTime: model.resetTime,
+                        resetDescription: model.resetDescription))
+                }
+            }
+            if model.label == "Gemini Flash" {
+                if let remaining = model.remainingFraction {
+                    quotas.append(GeminiModelQuota(
+                        modelId: "gemini-3-flash",
+                        percentLeft: remaining * 100,
+                        resetTime: model.resetTime,
+                        resetDescription: model.resetDescription))
+                }
+            }
+        }
+
+        guard !quotas.isEmpty else {
+            throw GeminiStatusProbeError.parseFailed("No Gemini quota available")
+        }
+
+        return GeminiStatusSnapshot(
+            modelQuotas: quotas,
+            rawText: "opencode",
+            accountEmail: snap.accountEmail,
+            accountPlan: snap.accountPlan)
     }
 
     // MARK: - Direct API approach

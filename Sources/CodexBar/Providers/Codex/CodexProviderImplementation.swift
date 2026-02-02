@@ -77,7 +77,32 @@ struct CodexProviderImplementation: ProviderImplementation {
                 subtitle: "Show usage breakdown, credits history, and code review via chatgpt.com.",
                 binding: extrasBinding,
                 statusText: nil,
-                actions: [],
+                actions: [
+                    ProviderSettingsActionDescriptor(
+                        id: "codex-import-opencode-oauth",
+                        title: "Import OpenCode OAuth",
+                        style: .bordered,
+                        isVisible: {
+                            let auth = OpenCodeAuthStore().loadAuthFile()
+                            return (auth?.openai?.access?.isEmpty == false)
+                        },
+                        perform: {
+                            guard let auth = OpenCodeAuthStore().loadAuthFile(),
+                                  let openai = auth.openai,
+                                  let access = openai.access,
+                                  let refresh = openai.refresh
+                            else { return }
+
+                            let credentials = CodexOAuthCredentials(
+                                accessToken: access,
+                                refreshToken: refresh,
+                                idToken: nil,
+                                accountId: openai.accountId,
+                                lastRefresh: Date())
+                            try? CodexOAuthCredentialsStore.save(credentials)
+                            context.settings.codexUsageDataSource = .oauth
+                        }),
+                ],
                 isVisible: nil,
                 onChange: nil,
                 onAppDidBecomeActive: nil,

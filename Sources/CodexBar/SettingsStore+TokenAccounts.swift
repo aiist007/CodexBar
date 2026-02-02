@@ -66,6 +66,81 @@ extension SettingsStore {
             ])
     }
 
+    func syncTokenAccounts(
+        provider: UsageProvider,
+        imported: [(label: String, token: String)],
+        preferredActiveLabel: String?)
+    {
+        guard TokenAccountSupportCatalog.support(for: provider) != nil else { return }
+        guard !imported.isEmpty else { return }
+
+        let existing = self.tokenAccountsData(for: provider)
+        var accounts = existing?.accounts ?? []
+        let now = Date().timeIntervalSince1970
+
+        // Index by label (case-insensitive) to avoid duplicates.
+        var indexByLabel: [String: Int] = [:]
+        indexByLabel.reserveCapacity(accounts.count)
+        for (idx, acct) in accounts.enumerated() {
+            indexByLabel[acct.label.lowercased()] = idx
+        }
+
+        for entry in imported {
+            let label = entry.label.trimmingCharacters(in: .whitespacesAndNewlines)
+            let token = entry.token.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !label.isEmpty, !token.isEmpty else { continue }
+
+            let key = label.lowercased()
+            if let idx = indexByLabel[key] {
+                let current = accounts[idx]
+                if current.token != token {
+                    accounts[idx] = ProviderTokenAccount(
+                        id: current.id,
+                        label: current.label,
+                        token: token,
+                        addedAt: current.addedAt,
+                        lastUsed: current.lastUsed)
+                }
+            } else {
+                let acct = ProviderTokenAccount(
+                    id: UUID(),
+                    label: label,
+                    token: token,
+                    addedAt: now,
+                    lastUsed: nil)
+                indexByLabel[key] = accounts.count
+                accounts.append(acct)
+            }
+        }
+
+        guard !accounts.isEmpty else { return }
+
+        let activeIndex: Int = {
+            guard let preferred = preferredActiveLabel?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !preferred.isEmpty
+            else {
+                return existing?.activeIndex ?? 0
+            }
+            return indexByLabel[preferred.lowercased()] ?? (existing?.activeIndex ?? 0)
+        }()
+
+        let updated = ProviderTokenAccountData(
+            version: existing?.version ?? 1,
+            accounts: accounts,
+            activeIndex: min(max(activeIndex, 0), accounts.count - 1))
+
+        self.updateProviderConfig(provider: provider) { entry in
+            entry.tokenAccounts = updated
+        }
+        self.applyTokenAccountCookieSourceIfNeeded(provider: provider)
+        CodexBarLog.logger(LogCategories.tokenAccounts).info(
+            "Token accounts synced",
+            metadata: [
+                "provider": provider.rawValue,
+                "count": "\(updated.accounts.count)",
+            ])
+    }
+
     func removeTokenAccount(provider: UsageProvider, accountID: UUID) {
         guard let data = self.tokenAccountsData(for: provider), !data.accounts.isEmpty else { return }
         let filtered = data.accounts.filter { $0.id != accountID }

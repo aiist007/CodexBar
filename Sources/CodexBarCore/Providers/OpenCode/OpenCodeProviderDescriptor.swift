@@ -33,10 +33,38 @@ public enum OpenCodeProviderDescriptor {
                 noDataMessage: { "OpenCode cost summary is not supported." }),
             fetchPlan: ProviderFetchPlan(
                 sourceModes: [.auto, .web],
-                pipeline: ProviderFetchPipeline(resolveStrategies: { _ in [OpenCodeUsageFetchStrategy()] })),
+                pipeline: ProviderFetchPipeline(resolveStrategies: { _ in
+                    [OpenCodeAPIKeyPresenceFetchStrategy(), OpenCodeUsageFetchStrategy()]
+                })),
             cli: ProviderCLIConfig(
                 name: "opencode",
                 versionDetector: nil))
+    }
+}
+
+struct OpenCodeAPIKeyPresenceFetchStrategy: ProviderFetchStrategy {
+    let id: String = "opencode.apiKey"
+    let kind: ProviderFetchKind = .apiToken
+
+    func isAvailable(_: ProviderFetchContext) async -> Bool {
+        let auth = OpenCodeAuthStore().loadAuthFile()
+        let key = auth?.opencode?.key?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return !key.isEmpty
+    }
+
+    func fetch(_: ProviderFetchContext) async throws -> ProviderFetchResult {
+        let auth = OpenCodeAuthStore().loadAuthFile()
+        let key = auth?.opencode?.key?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if key.isEmpty {
+            throw ProviderFetchError.noAvailableStrategy(.opencode)
+        }
+        let identity = ProviderIdentitySnapshot(providerID: .opencode, accountEmail: nil, accountOrganization: nil, loginMethod: "apiKey")
+        let usage = UsageSnapshot(primary: nil, secondary: nil, updatedAt: Date(), identity: identity)
+        return self.makeResult(usage: usage, sourceLabel: "api-key")
+    }
+
+    func shouldFallback(on _: Error, context _: ProviderFetchContext) -> Bool {
+        true
     }
 }
 

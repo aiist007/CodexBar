@@ -26,7 +26,7 @@ public enum OpenCodeCookieImporter {
 
     public static func importSession(
         browserDetection: BrowserDetection,
-        preferredBrowsers: [Browser] = [.chrome],
+        preferredBrowsers: [Browser] = [],
         logger: ((String) -> Void)? = nil) throws -> SessionInfo
     {
         let log: (String) -> Void = { msg in logger?("[opencode-cookie] \(msg)") }

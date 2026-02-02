@@ -485,10 +485,10 @@ extension StatusItemController {
 
     private func tokenAccountMenuDisplay(for provider: UsageProvider) -> TokenAccountMenuDisplay? {
         guard TokenAccountSupportCatalog.support(for: provider) != nil else { return nil }
-        let accounts = self.settings.tokenAccounts(for: provider)
+        let accounts = self.store.tokenAccounts(for: provider)
         guard accounts.count > 1 else { return nil }
         let activeIndex = self.settings.tokenAccountsData(for: provider)?.clampedActiveIndex() ?? 0
-        let showAll = self.settings.showAllTokenAccountsInMenu
+        let showAll = (provider == .antigravity || provider == .gemini) ? true : self.settings.showAllTokenAccountsInMenu
         let snapshots = showAll ? (self.store.accountSnapshots[provider] ?? []) : []
         return TokenAccountMenuDisplay(
             provider: provider,

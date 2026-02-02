@@ -446,8 +446,6 @@ final class UsageStore {
             await self.refreshProvider(.codex)
             await self.refreshCreditsIfNeeded()
         }
-
-        self.persistWidgetSnapshot(reason: "refresh")
     }
 
     /// For demo/testing: drop the snapshot so the loading animation plays, then restore the last snapshot.
@@ -1181,6 +1179,10 @@ extension UsageStore {
                 let text = "OpenCode debug log not yet implemented"
                 await MainActor.run { self.probeLogs[.opencode] = text }
                 return text
+            case .nvidia:
+                let text = "NVIDIA debug log not yet implemented"
+                await MainActor.run { self.probeLogs[.nvidia] = text }
+                return text
             case .factory:
                 let text = "Droid debug log not yet implemented"
                 await MainActor.run { self.probeLogs[.factory] = text }
@@ -1566,7 +1568,6 @@ extension UsageStore {
             self.tokenSnapshots[provider] = snapshot
             self.tokenErrors[provider] = nil
             self.tokenFailureGates[provider]?.recordSuccess()
-            self.persistWidgetSnapshot(reason: "token-usage")
         } catch {
             if error is CancellationError { return }
             let duration = Date().timeIntervalSince(startedAt)

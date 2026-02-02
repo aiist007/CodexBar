@@ -1,0 +1,8 @@
+# Configuration for CodexBar
+# Place this file at ~/.codex/config.toml
+
+# OpenAI (Codex) Base URL override
+# chatgpt_base_url = "https://your-openai-proxy.com/backend-api"
+
+# Claude Base URL override (Added via modification)
+# claude_base_url = "https://your-claude-proxy.com"

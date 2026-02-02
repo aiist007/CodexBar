@@ -2,6 +2,13 @@ import Foundation
 
 extension TokenAccountSupportCatalog {
     static let supportByProvider: [UsageProvider: TokenAccountSupport] = [
+        .codex: TokenAccountSupport(
+            title: "Session tokens",
+            subtitle: "Store OpenAI Cookie headers.",
+            placeholder: "Cookie: …",
+            injection: .cookieHeader,
+            requiresManualCookieSource: true,
+            cookieName: nil),
         .claude: TokenAccountSupport(
             title: "Session tokens",
             subtitle: "Store Claude sessionKey cookies or OAuth access tokens.",
@@ -50,6 +57,27 @@ extension TokenAccountSupportCatalog {
             placeholder: "Cookie: …",
             injection: .cookieHeader,
             requiresManualCookieSource: true,
+            cookieName: nil),
+        .antigravity: TokenAccountSupport(
+            title: "Accounts",
+            subtitle: "Store multiple Antigravity refresh tokens.",
+            placeholder: "Refresh Token…",
+            injection: .environment(key: "ANTIGRAVITY_REFRESH_TOKEN"),
+            requiresManualCookieSource: false,
+            cookieName: nil),
+        .gemini: TokenAccountSupport(
+            title: "Accounts",
+            subtitle: "Store multiple Gemini accounts (Antigravity refresh tokens).",
+            placeholder: "Refresh Token…",
+            injection: .environment(key: "ANTIGRAVITY_REFRESH_TOKEN"),
+            requiresManualCookieSource: false,
+            cookieName: nil),
+        .nvidia: TokenAccountSupport(
+            title: "API Keys",
+            subtitle: "Store multiple NVIDIA API keys.",
+            placeholder: "API Key…",
+            injection: .environment(key: "NVIDIA_API_KEY"),
+            requiresManualCookieSource: false,
             cookieName: nil),
     ]
 }

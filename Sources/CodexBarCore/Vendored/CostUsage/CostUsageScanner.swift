@@ -73,6 +73,8 @@ enum CostUsageScanner {
             return CostUsageDailyReport(data: [], summary: nil)
         case .opencode:
             return CostUsageDailyReport(data: [], summary: nil)
+        case .nvidia:
+            return CostUsageDailyReport(data: [], summary: nil)
         case .factory:
             return CostUsageDailyReport(data: [], summary: nil)
         case .copilot:
