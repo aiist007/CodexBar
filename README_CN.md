@@ -4,7 +4,6 @@
 
 CodexBar 是一款轻量级的 macOS 14+ 菜单栏应用，能够实时显示 Codex、Claude、Cursor、Gemini、Antigravity、Droid (Factory)、Copilot、z.ai、Kimi、Kimi K2、Kiro、Vertex AI、Augment、Amp 和 JetBrains AI 的使用限制（支持会话限额和周限额，视具体提供商而定），并显示各个时间窗口的重置时间。每个服务提供商都有独立的图标（也支持"合并图标"模式）；你可以通过设置面板启用你所使用的服务。该应用没有 Dock 图标，界面极简，在菜单栏中通过动态进度条图标展示状态。
 
-<img src="codexbar.png" alt="CodexBar 菜单截图" width="520" />
 
 ## 安装
 
