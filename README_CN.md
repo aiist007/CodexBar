@@ -8,10 +8,7 @@
 > 
 > | 改动项 | 说明 |
 > |--------|------|
-> | 🗑️ **移除小组件** | 完全移除 WidgetKit 小组件功能，专注于菜单栏核心体验，减少资源占用 |
-> | 🆕 **新增 Nvidia 支持** | 新增对 Nvidia NGC 平台的使用量监控 |
-> | 🔧 **OpenCode 增强** | 改进 Cookie 导入流程和设置管理 |
-> | 🔧 **Antigravity 增强** | 支持 OAuth 配额探测，提供更准确的使用量数据 |
+> | 👥 **多账户支持** | Antigravity 和 Gemini 支持多账户登录，所有账户额度同时显示在对应 Provider Tab 上 |
 > | 🐛 **其他优化** | 各种配置更新、CLI 改进和稳定性修复 |
 > 
 > 下载：<https://github.com/aiist007/CodexBar/releases>
