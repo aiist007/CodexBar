@@ -33,7 +33,18 @@ extension SettingsStore {
         }
     }
 
+    var opencodeAPIToken: String {
+        get { self.configSnapshot.providerConfig(for: .opencode)?.sanitizedAPIKey ?? "" }
+        set {
+            self.updateProviderConfig(provider: .opencode) { entry in
+                entry.apiKey = self.normalizedConfigValue(newValue)
+            }
+            self.logSecretUpdate(provider: .opencode, field: "apiKey", value: newValue)
+        }
+    }
+
     func ensureOpenCodeCookieLoaded() {}
+    func ensureOpenCodeAPITokenLoaded() {}
 }
 
 extension SettingsStore {

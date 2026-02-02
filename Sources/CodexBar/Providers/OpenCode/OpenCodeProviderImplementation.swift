@@ -79,7 +79,17 @@ struct OpenCodeProviderImplementation: ProviderImplementation {
 
     @MainActor
     func settingsFields(context: ProviderSettingsContext) -> [ProviderSettingsFieldDescriptor] {
-        [
+        let authStore = OpenCodeAuthStore()
+        let auth = authStore.loadAuthFile()
+
+        let opencodeKeyBinding = Binding(
+            get: { authStore.loadAuthFile()?.opencode?.key ?? "" },
+            set: { _ in })
+        let nvidiaKeyBinding = Binding(
+            get: { authStore.loadAuthFile()?.nvidia?.key ?? "" },
+            set: { _ in })
+
+        return [
             ProviderSettingsFieldDescriptor(
                 id: "opencode-workspace-id",
                 title: "Workspace ID",
@@ -89,6 +99,26 @@ struct OpenCodeProviderImplementation: ProviderImplementation {
                 binding: context.stringBinding(\.opencodeWorkspaceID),
                 actions: [],
                 isVisible: nil,
+                onActivate: nil),
+            ProviderSettingsFieldDescriptor(
+                id: "opencode-opencode-api-key",
+                title: "OpenCode API key",
+                subtitle: "From OpenCode auth store.",
+                kind: .secure,
+                placeholder: nil,
+                binding: opencodeKeyBinding,
+                actions: [],
+                isVisible: { (auth?.opencode?.key?.isEmpty == false) },
+                onActivate: nil),
+            ProviderSettingsFieldDescriptor(
+                id: "opencode-nvidia-api-key",
+                title: "NVIDIA API key",
+                subtitle: "From OpenCode auth store.",
+                kind: .secure,
+                placeholder: nil,
+                binding: nvidiaKeyBinding,
+                actions: [],
+                isVisible: { (auth?.nvidia?.key?.isEmpty == false) },
                 onActivate: nil),
         ]
     }
