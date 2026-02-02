@@ -2,6 +2,20 @@
 
 [English](README.md) | 中文版
 
+> **此版本与原版差异**
+> 
+> 本分支 ([aiist007/CodexBar](https://github.com/aiist007/CodexBar)) 基于原版 [steipete/CodexBar](https://github.com/steipete/CodexBar) 的改进版本，主要改动包括：
+> 
+> | 改动项 | 说明 |
+> |--------|------|
+> | 🗑️ **移除小组件** | 完全移除 WidgetKit 小组件功能，专注于菜单栏核心体验，减少资源占用 |
+> | 🆕 **新增 Nvidia 支持** | 新增对 Nvidia NGC 平台的使用量监控 |
+> | 🔧 **OpenCode 增强** | 改进 Cookie 导入流程和设置管理 |
+> | 🔧 **Antigravity 增强** | 支持 OAuth 配额探测，提供更准确的使用量数据 |
+> | 🐛 **其他优化** | 各种配置更新、CLI 改进和稳定性修复 |
+> 
+> 下载：<https://github.com/aiist007/CodexBar/releases>
+
 CodexBar 是一款轻量级的 macOS 14+ 菜单栏应用，能够实时显示 Codex、Claude、Cursor、Gemini、Antigravity、Droid (Factory)、Copilot、z.ai、Kimi、Kimi K2、Kiro、Vertex AI、Augment、Amp 和 JetBrains AI 的使用限制（支持会话限额和周限额，视具体提供商而定），并显示各个时间窗口的重置时间。每个服务提供商都有独立的图标（也支持"合并图标"模式）；你可以通过设置面板启用你所使用的服务。该应用没有 Dock 图标，界面极简，在菜单栏中通过动态进度条图标展示状态。
 
 
@@ -11,7 +25,7 @@ CodexBar 是一款轻量级的 macOS 14+ 菜单栏应用，能够实时显示 Co
 - macOS 14+ (Sonoma)
 
 ### GitHub Releases
-下载地址：<https://github.com/steipete/CodexBar/releases>
+下载地址：<https://github.com/aiist007/CodexBar/releases>
 
 ### Homebrew
 ```bash
